@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send Email</title>
+</head>
+<body>
+    <h1>Send Email</h1>
+    <button id="sendEmailButton">Send Email</button>
+
+    <script>
+        // 定义getAccessToken函数，用于获取访问令牌
+        async function getAccessToken() {
+            // 设置租户ID、客户端ID和客户端机密
+            const tenantId = '9794930c-dab4-4943-9c2c-5fdd411760cb';
+            const clientId = '7044225b-1aeb-4851-961a-bd03e8ac4d7b';
+            const clientSecret = '0Xy8Q~8VHWpFxrhL95iswI.aurHXAgrpwJvQTbe7';
+
+            // 设置范围
+            const scope = 'https://graph.microsoft.com/.default';
+
+            // 构造令牌端点URL
+            const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+            // 构造POST数据
+            const postData = `client_id=${clientId}&scope=${scope}&client_secret=${clientSecret}&grant_type=client_credentials`;
+
+            // 发送POST请求以获取访问令牌
+            const response = await fetch(tokenEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: postData
+            });
+
+            // 检查响应是否成功
+            if (response.ok) {
+                // 如果响应成功，则解析响应数据并返回访问令牌
+                const data = await response.json();
+                return data.access_token;
+            } else {
+                // 如果响应失败，则打印错误信息并返回null
+                console.error('An error occurred while getting the access token');
+                const errorText = await response.text();
+                console.error('Response:', errorText);
+                return null;
+            }
+        }
+
+        // 定义sendEmail函数，用于使用Microsoft Graph API发送电子邮件
+        async function sendEmail(accessToken) {
+            // 设置用户ID或UPN
+            const userId = 'a7029b6b-cf26-425c-8b0d-0aa6c2445326';
+
+            // 构造Microsoft Graph API的sendMail端点URL
+            const graphEndpoint = `https://graph.microsoft.com/v1.0/users/${userId}/sendMail`;
+
+            // 构造电子邮件内容
+            const mail = {
+                message: {
+                    subject: 'Test email',
+                    body: {
+                        contentType: 'Text',
+                        content: 'This is a test email'
+                    },
+                    toRecipients: [
+                        {
+                            emailAddress: {
+                                address: 'jacobhu0723@outlook.com'
+                            }
+                        }
+                    ]
+                }
+            };
+
+            // 发送POST请求以使用Microsoft Graph API发送电子邮件
+            const response = await fetch(graphEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + accessToken
+                },
+                body: JSON.stringify(mail)
+            });
+
+            // 检查响应是否成功
+            if (response.ok) {
+                // 如果响应成功，则打印成功信息
+                console.log('Email sent successfully');
+            } else {
+                // 如果响应失败，则打印错误信息
+                console.error('An error occurred while sending the email');
+            }
+        }
+
+        // 获取“发送电子邮件”按钮的引用
+        const sendEmailButton = document.getElementById('sendEmailButton');
+
+        // 为“发送电子邮件”按钮添加单击事件处理程序
+        sendEmailButton.addEventListener('click', async () => {
+            // 获取访问令牌
+            const accessToken = await getAccessToken();
+
+            // 检查是否成功获取访问令牌
+            if (accessToken) {
+                // 如果成功获取访问令牌，则使用Microsoft Graph API发送电子邮件
+                await sendEmail(accessToken);
+            }
+        });
+    </script>
+</body>
+</html>
