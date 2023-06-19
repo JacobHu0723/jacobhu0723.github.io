@@ -1,164 +1,182 @@
 <head>
     <style>
+        input,
+        textarea {
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+        }
+
         #comment {
             width: 100%;
-            height: 100px;
+            background-color: rgb(238, 238, 238);
+            border: 0px;
+            outline: none;
+            border-radius: 0.5rem;
+            padding-top: 0.3rem;
+            padding-bottom: 0.3rem;
+            overflow: hidden;
+            resize: none;
         }
 
         #name,
         #email {
-            height: 30px;
+            height: 2rem;
+            background-color: rgb(238, 238, 238);
+            border: 0px;
+            outline: none;
+            border-radius: 0.5rem;
         }
 
         label,
         input {
-            line-height: 40px;
+            line-height: 3rem;
+        }
+
+        #submit {
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: rgb(238, 238, 238);
+            border: 0px;
+            outline: none;
+            padding: 0.7rem 2rem;
+            border-radius: 0.5rem;
+            margin-left: 80%;
+            margin-top: 0.5rem;
+        }
+
+        #submit>img {
+            height: 1px;
+        }
+
+        #my-form-status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: black;
+            color: white;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #my-form-status.show {
+            opacity: 1;
         }
     </style>
-
-    <!-- 评论系统 -->
-    <script type="text/javascript">
-        // 导入node-fetch模块
-        let fetch;
-
-        async function loadFetch() {
-            fetch = (await import('node-fetch')).default;
-        }
-
-        // 定义getAccessToken函数，用于获取访问令牌
-        async function getAccessToken() {
-            // 确保已导入node-fetch模块
-            await loadFetch();
-
-            // 设置租户ID、客户端ID和客户端机密
-            const tenantId = '9794930c-dab4-4943-9c2c-5fdd411760cb';
-            const clientId = '7044225b-1aeb-4851-961a-bd03e8ac4d7b';
-            const clientSecret = '0Xy8Q~8VHWpFxrhL95iswI.aurHXAgrpwJvQTbe7';
-
-            // 设置范围
-            const scope = 'https://graph.microsoft.com/.default';
-
-            // 构造令牌端点URL
-            const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-
-            // 构造POST数据
-            const postData = `client_id=${clientId}&scope=${scope}&client_secret=${clientSecret}&grant_type=client_credentials`;
-
-            // 发送POST请求以获取访问令牌
-            const response = await fetch(tokenEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: postData
-            });
-
-            // 检查响应是否成功
-            if (response.ok) {
-                // 如果响应成功，则解析响应数据并返回访问令牌
-                const data = await response.json();
-                return data.access_token;
-            } else {
-                // 如果响应失败，则打印错误信息并返回null
-                console.error('An error occurred while getting the access token');
-                const errorText = await response.text();
-                console.error('Response:', errorText);
-                return null;
-            }
-        }
-
-        // 定义sendEmail函数，用于使用Microsoft Graph API发送电子邮件
-        async function sendEmail(accessToken) {
-            // 确保已导入node-fetch模块
-            await loadFetch();
-
-            // 设置用户ID或UPN
-            const userId = 'a7029b6b-cf26-425c-8b0d-0aa6c2445326';
-
-            // 构造Microsoft Graph API的sendMail端点URL
-            const graphEndpoint = `https://graph.microsoft.com/v1.0/users/${userId}/sendMail`;
-
-            // 构造电子邮件内容
-            const mail = {
-                message: {
-                    subject: 'Test email',
-                    body: {
-                        contentType: 'Text',
-                        content: 'This is a test email'
-                    },
-                    toRecipients: [
-                        {
-                            emailAddress: {
-                                address: 'jacobhu0723@outlook.com'
-                            }
-                        }
-                    ]
-                }
-            };
-
-            // 发送POST请求以使用Microsoft Graph API发送电子邮件
-            const response = await fetch(graphEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + accessToken
-                },
-                body: JSON.stringify(mail)
-            });
-
-            // 检查响应是否成功
-            if (response.ok) {
-                // 如果响应成功，则打印成功信息
-                console.log('Email sent successfully');
-            } else {
-                // 如果响应失败，则打印错误信息
-                console.error('An error occurred while sending the email');
-            }
-        }
-
-        // 定义main函数，用于运行整个程序
-        async function main() {
-            // 确保已导入node-fetch模块
-            await loadFetch();
-
-            // 获取访问令牌
-            const accessToken = await getAccessToken();
-
-            // 检查是否成功获取访问令牌
-            if (accessToken) {
-                // 如果成功获取访问令牌，则使用Microsoft Graph API发送电子邮件
-                await sendEmail(accessToken);
-            }
-        }
-
-        // 运行main函数
-        main();
-
-    </script>
 
 </head>
 
 <body>
     <p></p>
-    <label for="name">昵称（必填）</label>
-    <br />
-    <input type="text" id="name" required>
-    <br /> <br />
 
-    <label for="email">邮箱（选填）</label>
-    <br />
-    <input type="text" id="email">
-    <br /> <br />
+    <!-- Formspree邮件发送 -->
 
-    <label for="comment">评论</label>
-    <br />
-    <input type="text" id="comment" required>
+    <form id="my-form" action="https://formspree.io/f/mlekqonp" method="POST">
+        <label for="name">昵称（必填）</label>
+        <br />
+        <input type="text" id="name" name="name" autocomplete="off" required>
+        <br /> <br />
 
-    <form onsubmit="return sendEmail()">
-        <label for="to">To:</label><input type="email" id="to" required><br>
-        <label for="subject">Subject:</label><input type="text" id="subject" required><br>
-        <label for="body">Body:</label><textarea id="body" required></textarea><br>
-        <input type="submit" value="Send">
+        <label for="email" type="email">邮箱（选填）</label>
+        <br />
+        <input type="text" id="email" name="email" autocomplete="off">
+        <br /> <br />
+
+        <label for="comment">评论</label>
+        <br />
+        <textarea id="comment" name="comment" rows="5" autocomplete="off" oninput="autoGrow(this)" required></textarea>
+        <br /><br />
+        <button type="submit" id="submit">发送<img src="\img\submit.svg" alt="submit"></button>
+        <p id="my-form-status"></p>
+        <input type="hidden" id="ua" name="ua">
+        <input type="hidden" id="ip" name="ip"><br>
     </form>
 
+    <!-- 评论区自动增加高度 -->
+    <script>
+        function autoGrow(textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = (textarea.scrollHeight) + "px";
+        }
+    </script>
+
+    <!-- 发送JS -->
+    <script>
+        var form = document.getElementById("my-form");
+
+        async function handleSubmit(event) {
+
+            event.preventDefault();
+            var status = document.getElementById("my-form-status");
+            var data = new FormData(event.target);
+            fetch(event.target.action, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                // alert(response)
+                if (response.ok) {
+                    status.innerHTML = "✅感谢您的评论！";
+                    status.classList.add('show');
+                    setTimeout(() => {
+                        status.classList.remove('show');
+                    }, 3000);
+                    form.reset()
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            if (data["errors"].map(error => error["message"]).join(", ") == "should be an email") {
+                                status.style.display = 'block';
+                                status.innerHTML = "❎不是有效邮箱地址";
+                                status.classList.add('show');
+                                setTimeout(() => {
+                                    status.classList.remove('show');
+                                }, 3000);
+                            } else {
+                                status.style.display = 'block';
+                                status.innerHTML = data["errors"].map(error => error["message"]).join(", ")
+                                status.classList.add('show');
+                                setTimeout(() => {
+                                    status.classList.remove('show');
+                                }, 3000);
+                            };
+                        } else {
+                            status.style.display = 'block';
+                            status.innerHTML = "❎出现错误，请稍后再试";
+                            status.classList.add('show');
+                            setTimeout(() => {
+                                status.classList.remove('show');
+                            }, 3000);
+                        }
+                    })
+                }
+            }).catch(error => {
+                status.innerHTML = "❎出现错误，请稍后再试"
+                status.classList.add('show');
+                setTimeout(() => {
+                    status.classList.remove('show');
+                }, 3000);
+            });
+        }
+        form.addEventListener("submit", handleSubmit)
+    </script>
+    <script>
+        async function getIpAddress() {
+            let response = await fetch('https://api.ipify.org?format=json');
+            let data = await response.json();
+            return data.ip;
+        }
+
+        window.addEventListener('load', async () => {
+            let ua = navigator.userAgent;
+            document.getElementById('ua').value = ua;
+
+            let ip = await getIpAddress();
+            document.getElementById('ip').value = ip;
+        });
+    </script>
 </body>

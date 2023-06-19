@@ -8,6 +8,11 @@
     <button id="sendEmailButton">Send Email</button>
 
     <script>
+        async function loadFetch() {
+        // 使用window.fetch代替node-fetch
+        fetch = window.fetch;
+    }
+        
         // 定义getAccessToken函数，用于获取访问令牌
         async function getAccessToken() {
             // 设置租户ID、客户端ID和客户端机密
